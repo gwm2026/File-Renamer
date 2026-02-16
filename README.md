@@ -1,6 +1,7 @@
 # Company File Naming Tool
 
-A desktop file renaming app for storing and reusing company-specific naming standards.
+File renaming app for storing and reusing company-specific naming standards.
+You can run it either as a desktop app (Tkinter) or as a web app (browser + local Python server).
 
 ## What it does
 
@@ -11,7 +12,7 @@ A desktop file renaming app for storing and reusing company-specific naming stan
 - Applies the rename in one batch action
 - Lets you add, edit, and delete company schemes in-app
 
-## Run it
+## Run desktop version
 
 ```bash
 python3 app.py
@@ -24,6 +25,24 @@ If you are on Linux and Tkinter is missing, install it with:
 ```bash
 sudo apt-get install python3-tk
 ```
+
+## Run web version
+
+```bash
+python3 web_app.py --host 127.0.0.1 --port 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+Notes for web mode:
+
+- The folder path you enter is resolved on the machine running `web_app.py`.
+- No third-party Python packages are required.
+- Schemes are shared with desktop mode through `company_schemes.json`.
 
 ## Naming pattern tokens
 
@@ -65,3 +84,4 @@ You can edit this file directly or use the **Manage Company Schemes** tab in the
 - The app renames all files in the selected folder (not subfolders).
 - Filename-invalid characters are replaced automatically.
 - Preview is shown before rename, and rename uses temporary names internally to avoid collisions.
+- The web app provides the same core workflow: company dropdown, project details, preview, and apply rename.

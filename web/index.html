@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Company File Naming Tool (Web)</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Company File Naming Tool</h1>
+      <p>Store company naming schemes and rename project files in bulk.</p>
+    </header>
+
+    <main class="page-layout">
+      <section class="card">
+        <h2>Rename Files</h2>
+
+        <div class="form-grid">
+          <label>
+            Company
+            <select id="renameCompany"></select>
+          </label>
+
+          <label>
+            Project folder path
+            <input
+              id="folderPath"
+              type="text"
+              placeholder="/absolute/path/to/project/folder"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+
+        <p class="hint">
+          Tokens: <code>{seq}</code>, <code>{company}</code>, <code>{original_name}</code>,
+          <code>{original_filename}</code>, <code>{ext}</code>, <code>{ext_with_dot}</code>, and custom fields.
+        </p>
+
+        <div>
+          <h3>Project Details</h3>
+          <div id="projectFields" class="form-grid"></div>
+        </div>
+
+        <div class="button-row">
+          <button id="previewBtn" type="button">Preview Renames</button>
+          <button id="renameBtn" type="button" disabled>Apply Rename</button>
+        </div>
+
+        <div id="previewErrors" class="alert hidden"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Current Name</th>
+                <th>Renamed To</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Manage Company Schemes</h2>
+
+        <div class="form-grid">
+          <label>
+            Saved company scheme
+            <select id="manageCompany"></select>
+          </label>
+        </div>
+
+        <div class="button-row compact">
+          <button id="loadSchemeBtn" type="button">Load into editor</button>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Company name
+            <input id="companyName" type="text" autocomplete="off" />
+          </label>
+
+          <label>
+            Naming pattern
+            <input id="pattern" type="text" autocomplete="off" />
+          </label>
+
+          <label>
+            Required fields (comma-separated)
+            <input id="fields" type="text" autocomplete="off" />
+          </label>
+
+          <label>
+            Sequence start
+            <input id="sequenceStart" type="number" min="0" value="1" />
+          </label>
+
+          <label>
+            Sequence padding
+            <input id="sequencePadding" type="number" min="1" value="3" />
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="saveSchemeBtn" type="button">Save Scheme</button>
+          <button id="deleteSchemeBtn" type="button">Delete Scheme</button>
+          <button id="clearEditorBtn" type="button">Clear Editor</button>
+        </div>
+
+        <p class="hint">
+          Pattern examples:
+          <code>{client}_{project_code}_{deliverable}_{date}_{seq}</code> or
+          <code>{project_code}-{phase}-{drawing_type}-{seq}-{ext}</code>
+        </p>
+      </section>
+    </main>
+
+    <footer class="status-bar">
+      <span id="statusText">Loading schemes...</span>
+    </footer>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
