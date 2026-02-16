@@ -1,2 +1,10 @@
-__pycache__/
-*.py[cod]
+node_modules
+dist
+dist-main
+dist-preload
+release
+*.local
+.DS_Store
+*.log
+.env
+.env.*
