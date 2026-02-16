@@ -1,4 +1,4 @@
-import type { CompanyTemplate, TokenDefinition } from './types'
+import type { CompanyTemplate, Scheme, TokenDefinition } from './types'
 
 function applyCaseStyle(value: string, style?: string): string {
   if (!value || style === 'none' || !style) return value
@@ -38,7 +38,7 @@ export function renderPattern(
   pattern: string,
   tokenValues: Record<string, string>,
   extension?: string,
-  template?: CompanyTemplate
+  template?: CompanyTemplate | Scheme
 ): string {
   const tokenMap = new Map<string, TokenDefinition>()
   if (template?.tokens) {

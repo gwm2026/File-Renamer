@@ -1,13 +1,13 @@
-import type { CompanyTemplate, TokenDefinition } from '../shared/types'
+import type { Company, Scheme, TokenDefinition } from '../shared/types'
 
 function token(
-  templateId: string,
+  schemeId: string,
   key: string,
   label: string,
   opts: { required?: boolean; example?: string; allowedValues?: string[]; numeric?: boolean; renderSuffix?: string; renderPrefix?: string } = {}
 ): TokenDefinition {
   return {
-    id: templateId + '-token-' + key,
+    id: schemeId + '-token-' + key,
     key,
     label,
     required: opts.required ?? true,
@@ -20,38 +20,40 @@ function token(
   }
 }
 
-export function getDefaultTemplates(): CompanyTemplate[] {
+export function getDefaultCompanies(): Company[] {
   const parasolId = 'preset-parasol-music'
-  const parasol: CompanyTemplate = {
-    id: parasolId,
-    name: 'Parasol Music',
+  const parasolSchemeId = parasolId + '-default'
+  const parasolScheme: Scheme = {
+    id: parasolSchemeId,
+    name: 'Default',
     pattern: '{artist} - {title} ({codes})_{version}_{type}_{stem}',
     tokens: [
-      token(parasolId, 'artist', 'Artist', { example: 'Vagabon' }),
-      token(parasolId, 'title', 'Title', { example: 'Home Soon' }),
-      token(parasolId, 'codes', 'Codes', { example: 'PRSLxGW' }),
-      token(parasolId, 'version', 'Version', { example: 'V1', allowedValues: ['V1', 'V2', 'V3'] }),
-      token(parasolId, 'type', 'Type', {
+      token(parasolSchemeId, 'artist', 'Artist', { example: 'Vagabon' }),
+      token(parasolSchemeId, 'title', 'Title', { example: 'Home Soon' }),
+      token(parasolSchemeId, 'codes', 'Codes', { example: 'PRSLxGW' }),
+      token(parasolSchemeId, 'version', 'Version', { example: 'V1', allowedValues: ['V1', 'V2', 'V3'] }),
+      token(parasolSchemeId, 'type', 'Type', {
         example: 'STEM',
         allowedValues: ['STEM', 'MIX', 'ALT', 'INSTR', 'FULL', 'STEREOMIX'],
       }),
-      token(parasolId, 'stem', 'Stem', { example: 'Original Vocals', required: false }),
+      token(parasolSchemeId, 'stem', 'Stem', { example: 'Original Vocals', required: false }),
     ],
     rules: { sanitize: true, whitespace: true, allowedTypes: ['STEM', 'MIX', 'ALT', 'INSTR'] },
   }
 
   const westOneId = 'preset-west-one-music-group'
-  const westOne: CompanyTemplate = {
-    id: westOneId,
-    name: 'West One Music Group',
+  const westOneSchemeId = westOneId + '-default'
+  const westOneScheme: Scheme = {
+    id: westOneSchemeId,
+    name: 'Default',
     pattern: '{projectCode}_{composer}_{trackTitle}_{key}_{bpm}BPM_{version}',
     tokens: [
-      token(westOneId, 'projectCode', 'Project Code', { example: 'FEMMPP194' }),
-      token(westOneId, 'composer', 'Composer Initials', { example: 'GW' }),
-      token(westOneId, 'trackTitle', 'Track Title', { example: 'Awakening' }),
-      token(westOneId, 'key', 'Key', { example: 'Dmaj' }),
-      token(westOneId, 'bpm', 'BPM', { example: '77', numeric: true }),
-      token(westOneId, 'version', 'Version', { example: 'v1', allowedValues: ['v1', 'v2', 'v3'], renderPrefix: 'v' }),
+      token(westOneSchemeId, 'projectCode', 'Project Code', { example: 'FEMMPP194' }),
+      token(westOneSchemeId, 'composer', 'Composer Initials', { example: 'GW' }),
+      token(westOneSchemeId, 'trackTitle', 'Track Title', { example: 'Awakening' }),
+      token(westOneSchemeId, 'key', 'Key', { example: 'Dmaj' }),
+      token(westOneSchemeId, 'bpm', 'BPM', { example: '77', numeric: true }),
+      token(westOneSchemeId, 'version', 'Version', { example: 'v1', allowedValues: ['v1', 'v2', 'v3'], renderPrefix: 'v' }),
     ],
     rules: { sanitize: true, whitespace: true, keepUnderscores: true },
     parsingHints: {
@@ -60,5 +62,8 @@ export function getDefaultTemplates(): CompanyTemplate[] {
     },
   }
 
-  return [parasol, westOne]
+  return [
+    { id: parasolId, name: 'Parasol Music', types: ['STEM', 'MIX', 'ALT', 'INSTR', 'FULL', 'STEREOMIX'], schemes: [parasolScheme] },
+    { id: westOneId, name: 'West One Music Group', types: [], schemes: [westOneScheme] },
+  ]
 }

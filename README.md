@@ -1,10 +1,44 @@
 # SchemeRename
 
-Desktop app to batch-rename audio files (WAV, AIF, MP3) using per-company naming schemes (templates). Pick a company, fill project details, select files, preview new names, and apply renames with optional undo.
+Desktop app to batch-rename files using per-company naming schemes (templates). Works with any file type: audio deliverables, trailer cues, invoices (PDFs), contracts, and more. Pick a company, fill project details, select files, preview new names, and apply renames with optional undo.
 
 **Tech:** Electron + React + TypeScript + Vite + Tailwind. Persistence via `electron-store`. macOS.
 
-## Setup
+---
+
+## Quick start (first time)
+
+1. **Open a terminal** in this project folder (e.g. `File-Renamer`).
+
+2. **Install dependencies** (required once):
+   ```bash
+   npm install
+   ```
+
+3. **Launch the app**:
+   ```bash
+   npm run electron:dev
+   ```
+   (This compiles the Electron main/preload code, starts the Vite dev server, and opens the app window.)
+
+**If it doesn’t work:**
+
+- **“Cannot find module” or blank window**  
+  Compile main and preload once, then start again:
+  ```bash
+  npm run build:main
+  npm run electron:dev
+  ```
+- **“npm: command not found”**  
+  Install Node.js (which includes npm) from [nodejs.org](https://nodejs.org) or via Homebrew: `brew install node`.
+- **Port 5173 in use**  
+  Stop any other app using port 5173, or change the port in `vite.config.ts` and in the `wait-on` URL in `package.json` (e.g. 5174).
+
+---
+
+## Setup (reference)
+
+Install dependencies before running or building:
 
 ```bash
 npm install
@@ -35,13 +69,23 @@ npm run build
 
 This compiles main and preload into `dist-main/` and `dist-preload/`, and builds the renderer into `dist/`.
 
-## Package (macOS app)
+## Package as a normal app (macOS)
+
+Build a standalone app you can keep in Applications or anywhere:
 
 ```bash
-npm run electron:build
+npm run package
 ```
 
-Produces the app in `release/` (dmg/zip).
+(or `npm run electron:build` — same thing)
+
+When it finishes you’ll have:
+
+- **`release/SchemeRename.app`** — double‑click to run like any Mac app.
+- **`release/SchemeRename-1.0.0.dmg`** — installer you can share or use to install.
+- **`release/SchemeRename-1.0.0-mac.zip`** — zip of the app.
+
+Copy **SchemeRename.app** to `/Applications` (or leave it in `release/`) and run it from there. Your data (companies, templates) is stored in your user app data folder and will be used by the packaged app too.
 
 ## Tests
 

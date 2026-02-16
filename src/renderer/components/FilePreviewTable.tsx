@@ -1,20 +1,25 @@
 import type { PreviewRow } from '@shared/types'
+import type { TokenDefinition } from '@shared/types'
 import { AlertCircle } from 'lucide-react'
 
 interface FilePreviewTableProps {
   rows: PreviewRow[]
   stemOverrides: Record<string, string>
   onStemChange: (path: string, stem: string) => void
+  /** When the scheme has a per-file token (e.g. stem), pass it so the column is shown with this label */
+  perFileToken?: TokenDefinition | null
 }
 
-export function FilePreviewTable({ rows, stemOverrides, onStemChange }: FilePreviewTableProps) {
+export function FilePreviewTable({ rows, stemOverrides, onStemChange, perFileToken }: FilePreviewTableProps) {
   if (rows.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 py-12 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:text-zinc-400">
-        Select files and click Preview Rename to see results.
+        Select files to see them below; new names update as you change the form.
       </div>
     )
   }
+
+  const showPerFileColumn = perFileToken != null
 
   return (
     <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
@@ -22,8 +27,12 @@ export function FilePreviewTable({ rows, stemOverrides, onStemChange }: FilePrev
         <thead>
           <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800">
             <th className="px-4 py-2 font-medium">Original name</th>
+            <th className="px-4 py-2 font-medium">Path</th>
+            <th className="px-4 py-2 font-medium">Extension</th>
             <th className="px-4 py-2 font-medium">New name</th>
-            <th className="px-4 py-2 font-medium">Stem</th>
+            {showPerFileColumn && (
+              <th className="px-4 py-2 font-medium">{perFileToken!.label}</th>
+            )}
             <th className="px-4 py-2 font-medium">Status</th>
             <th className="px-4 py-2 font-medium">Target folder</th>
           </tr>
@@ -39,18 +48,24 @@ export function FilePreviewTable({ rows, stemOverrides, onStemChange }: FilePrev
               <td className="max-w-[200px] truncate px-4 py-2" title={row.originalPath}>
                 {row.originalName}
               </td>
+              <td className="max-w-[150px] truncate px-4 py-2 text-zinc-500" title={row.path ?? row.originalPath}>
+                {row.path ?? '—'}
+              </td>
+              <td className="px-4 py-2 font-mono text-xs">{row.extension ?? '—'}</td>
               <td className="max-w-[200px] truncate px-4 py-2" title={row.newName}>
                 {row.newName}
               </td>
+              {showPerFileColumn && (
               <td className="px-4 py-2">
                 <input
                   type="text"
                   value={stemOverrides[row.originalPath] ?? row.stemOverride ?? ''}
                   onChange={(e) => onStemChange(row.originalPath, e.target.value)}
-                  placeholder="Stem"
+                  placeholder={perFileToken!.label}
                   className="w-32 rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-600 dark:bg-zinc-700"
                 />
               </td>
+              )}
               <td className="px-4 py-2">
                 {row.status === 'ok' ? (
                   <span className="text-green-600 dark:text-green-400">OK</span>

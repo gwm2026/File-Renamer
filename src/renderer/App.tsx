@@ -1,49 +1,84 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { CompanyTemplate } from '@shared/types'
+import type { Company, Scheme } from '@shared/types'
 import { Sidebar } from './components/Sidebar'
 import { MainPanel } from './components/MainPanel'
 
-export default function App() {
-  const [templates, setTemplates] = useState<CompanyTemplate[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [openEditorForId, setOpenEditorForId] = useState<string | null>(null)
+function createDefaultScheme(companyId: string): Scheme {
+  const schemeId = companyId + '-default'
+  return {
+    id: schemeId,
+    name: 'Default',
+    pattern: '{name}',
+    tokens: [
+      { id: schemeId + '-token-name', key: 'name', label: 'Name', required: true, defaultValue: '', example: 'Example' },
+    ],
+    rules: { sanitize: true, whitespace: true },
+  }
+}
 
-  const loadTemplates = useCallback(async () => {
+export default function App() {
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
+  const [selectedSchemeId, setSelectedSchemeId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [openEditorForSchemeId, setOpenEditorForSchemeId] = useState<string | null>(null)
+
+  const loadCompanies = useCallback(async () => {
     try {
-      const list = await window.schemerename.getTemplates()
-      setTemplates(list)
-      if (list.length && !selectedId) setSelectedId(list[0].id)
-      if (selectedId && !list.some((t) => t.id === selectedId)) setSelectedId(list[0]?.id ?? null)
+      const list = await window.schemerename.getCompanies()
+      setCompanies(list)
+      if (list.length) {
+        if (!selectedCompanyId || !list.some((c) => c.id === selectedCompanyId)) {
+          setSelectedCompanyId(list[0].id)
+          setSelectedSchemeId(list[0].schemes[0]?.id ?? null)
+        } else {
+          const company = list.find((c) => c.id === selectedCompanyId)
+          const schemeIds = company?.schemes.map((s) => s.id) ?? []
+          if (!selectedSchemeId || !schemeIds.includes(selectedSchemeId)) {
+            setSelectedSchemeId(company?.schemes[0]?.id ?? null)
+          }
+        }
+      } else {
+        setSelectedCompanyId(null)
+        setSelectedSchemeId(null)
+      }
     } finally {
       setLoading(false)
     }
-  }, [selectedId])
+  }, [selectedCompanyId, selectedSchemeId])
 
   useEffect(() => {
-    loadTemplates()
+    loadCompanies()
   }, [])
 
-  const selectedTemplate = templates.find((t) => t.id === selectedId) ?? null
+  const selectedCompany = companies.find((c) => c.id === selectedCompanyId) ?? null
+  const selectedScheme = selectedCompany?.schemes.find((s) => s.id === selectedSchemeId) ?? selectedCompany?.schemes[0] ?? null
 
-  const handleSaveTemplates = async (next: CompanyTemplate[]) => {
-    await window.schemerename.saveTemplates(next)
-    setTemplates(next)
+  useEffect(() => {
+    if (selectedCompany && selectedSchemeId && !selectedCompany.schemes.some((s) => s.id === selectedSchemeId)) {
+      setSelectedSchemeId(selectedCompany.schemes[0]?.id ?? null)
+    }
+  }, [selectedCompanyId, selectedCompany, selectedSchemeId])
+
+  const handleSaveCompanies = async (next: Company[]) => {
+    setCompanies(next)
+    await window.schemerename.saveCompanies(next)
   }
 
   const handleAddCompany = () => {
-    const newTemplate: CompanyTemplate = {
-      id: 'new-' + Date.now(),
+    const companyId = 'new-' + Date.now()
+    const newCompany: Company = {
+      id: companyId,
       name: 'New Company',
-      pattern: '{name}',
-      tokens: [{ id: 't1', key: 'name', label: 'Name', required: true, defaultValue: '', example: 'Example' }],
-      rules: { sanitize: true, whitespace: true },
+      types: [],
+      schemes: [createDefaultScheme(companyId)],
     }
-    const next = [...templates, newTemplate]
-    window.schemerename.saveTemplates(next).then(() => {
-      setTemplates(next)
-      setSelectedId(newTemplate.id)
-      setOpenEditorForId(newTemplate.id)
+    const next = [...companies, newCompany]
+    window.schemerename.saveCompanies(next).then(() => {
+      setCompanies(next)
+      setSelectedCompanyId(newCompany.id)
+      setSelectedSchemeId(newCompany.schemes[0].id)
+      setOpenEditorForSchemeId(newCompany.schemes[0].id)
     })
   }
 
@@ -58,19 +93,21 @@ export default function App() {
   return (
     <div className="flex h-screen bg-zinc-100 dark:bg-zinc-900">
       <Sidebar
-        templates={templates}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
+        companies={companies}
+        selectedCompanyId={selectedCompanyId}
+        onSelectCompany={setSelectedCompanyId}
         onAddCompany={handleAddCompany}
-        onSaveTemplates={handleSaveTemplates}
+        onSaveCompanies={handleSaveCompanies}
       />
       <MainPanel
-        templates={templates}
-        selectedTemplate={selectedTemplate}
-        onSelectTemplate={setSelectedId}
-        onSaveTemplates={handleSaveTemplates}
-        openEditorForId={openEditorForId}
-        onClearOpenEditor={() => setOpenEditorForId(null)}
+        companies={companies}
+        selectedCompany={selectedCompany}
+        selectedScheme={selectedScheme}
+        onSelectCompany={setSelectedCompanyId}
+        onSelectScheme={setSelectedSchemeId}
+        onSaveCompanies={handleSaveCompanies}
+        openEditorForSchemeId={openEditorForSchemeId}
+        onClearOpenEditor={() => setOpenEditorForSchemeId(null)}
       />
     </div>
   )

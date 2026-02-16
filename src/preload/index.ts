@@ -1,12 +1,12 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { CompanyTemplate, PreviewRow, PreviewRenameArgs, ApplyRenameResult, RenameJournalEntry } from '../shared/types'
+import type { Company, PreviewRow, PreviewRenameArgs, ApplyRenameResult, RenameJournalEntry } from '../shared/types'
 
 const api = {
   selectFiles: (): Promise<string[]> => ipcRenderer.invoke('schemerename:selectFiles'),
   selectFolder: (): Promise<string | null> => ipcRenderer.invoke('schemerename:selectFolder'),
-  getTemplates: (): Promise<CompanyTemplate[]> => ipcRenderer.invoke('schemerename:getTemplates'),
-  saveTemplates: (templates: CompanyTemplate[]): Promise<void> =>
-    ipcRenderer.invoke('schemerename:saveTemplates', templates),
+  getCompanies: (): Promise<Company[]> => ipcRenderer.invoke('schemerename:getCompanies'),
+  saveCompanies: (companies: Company[]): Promise<void> =>
+    ipcRenderer.invoke('schemerename:saveCompanies', companies),
   previewRename: (args: PreviewRenameArgs): Promise<PreviewRow[]> =>
     ipcRenderer.invoke('schemerename:previewRename', args),
   applyRename: (args: {

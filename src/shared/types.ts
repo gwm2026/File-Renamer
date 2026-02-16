@@ -28,6 +28,25 @@ export interface ParsingHints {
   captureToToken?: string[]
 }
 
+/** A naming scheme (pattern + tokens + rules). Previously embedded in CompanyTemplate. */
+export interface Scheme {
+  id: string
+  name: string
+  pattern: string
+  tokens: TokenDefinition[]
+  rules: TemplateRules
+  parsingHints?: ParsingHints
+}
+
+/** Company with multiple schemes and optional custom types list. */
+export interface Company {
+  id: string
+  name: string
+  types: string[]
+  schemes: Scheme[]
+}
+
+/** @deprecated Use Scheme for scheme data; Company for company + schemes. Kept for migration. */
 export interface CompanyTemplate {
   id: string
   name: string
@@ -52,10 +71,15 @@ export interface PreviewRow {
   targetFolder: string
   warnings?: string[]
   stemOverride?: string
+  /** Folder path (for display when rows are built from file selection) */
+  path?: string
+  /** File extension (for display when rows are built from file selection) */
+  extension?: string
 }
 
 export interface PreviewRenameArgs {
-  templateId: string
+  /** Scheme id (resolved from companies in main process). */
+  schemeId: string
   batchValues: Record<string, string>
   fileStemOverrides?: Record<string, string>
   filePaths: string[]

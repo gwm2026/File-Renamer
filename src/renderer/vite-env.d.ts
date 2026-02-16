@@ -1,13 +1,13 @@
 /// <reference types="vite/client" />
-import type { CompanyTemplate, PreviewRow, PreviewRenameArgs, ApplyRenameResult, RenameJournalEntry } from '../shared/types'
+import type { Company, PreviewRow, PreviewRenameArgs, ApplyRenameResult, RenameJournalEntry } from '../shared/types'
 
 declare global {
   interface Window {
     schemerename: {
       selectFiles: () => Promise<string[]>
       selectFolder: () => Promise<string | null>
-      getTemplates: () => Promise<CompanyTemplate[]>
-      saveTemplates: (templates: CompanyTemplate[]) => Promise<void>
+      getCompanies: () => Promise<Company[]>
+      saveCompanies: (companies: Company[]) => Promise<void>
       previewRename: (args: PreviewRenameArgs) => Promise<PreviewRow[]>
       applyRename: (args: {
         operations: { fromPath: string; toPath: string }[]

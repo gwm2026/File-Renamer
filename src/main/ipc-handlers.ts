@@ -1,6 +1,7 @@
 import path from 'path'
 import type {
-  CompanyTemplate,
+  Company,
+  Scheme,
   PreviewRow,
   PreviewRenameArgs,
   ApplyRenameResult,
@@ -8,10 +9,18 @@ import type {
 } from '../shared/types'
 import { renderPattern } from '../shared/template'
 import { sanitizeFilename } from '../shared/sanitize'
-import { getDefaultTemplates as getPresets } from './presets'
+import { getDefaultCompanies as getPresets } from './presets'
 
-export function getDefaultTemplates(): CompanyTemplate[] {
+export function getDefaultCompanies(): Company[] {
   return getPresets()
+}
+
+function findScheme(companies: Company[], schemeId: string): Scheme | null {
+  for (const c of companies) {
+    const s = c.schemes.find((s) => s.id === schemeId)
+    if (s) return s
+  }
+  return null
 }
 
 function getExtension(filePath: string): string {
@@ -24,13 +33,13 @@ function getDir(filePath: string): string {
   return last <= 0 ? '' : filePath.slice(0, last)
 }
 
-export function previewRename(
+export async function previewRename(
   args: PreviewRenameArgs,
-  templates: CompanyTemplate[],
+  companies: Company[],
   fsModule: Pick<typeof import('fs/promises'), 'stat'>
-): PreviewRow[] {
-  const template = templates.find((t) => t.id === args.templateId)
-  if (!template) return []
+): Promise<PreviewRow[]> {
+  const scheme = findScheme(companies, args.schemeId)
+  if (!scheme) return []
 
   const targetDir = args.targetFolder ?? null
   const rows: PreviewRow[] = []
@@ -44,13 +53,13 @@ export function previewRename(
 
     const batchValues = { ...args.batchValues }
     const stemOverride = args.fileStemOverrides?.[filePath]
-    if (template.tokens.some((t) => t.key === 'stem')) {
+    if (scheme.tokens.some((t) => t.key === 'stem')) {
       batchValues['stem'] = stemOverride ?? batchValues['stem'] ?? ''
     }
 
     let newName: string
     try {
-      newName = renderPattern(template.pattern, batchValues, ext, template)
+      newName = renderPattern(scheme.pattern, batchValues, ext, scheme)
     } catch {
       rows.push({
         originalPath: filePath,
@@ -63,19 +72,23 @@ export function previewRename(
       continue
     }
 
-    newName = sanitizeFilename(newName, template.rules)
+    newName = sanitizeFilename(newName, scheme.rules)
     const hasExt = ext && newName.toLowerCase().endsWith('.' + ext.toLowerCase())
     if (ext && !hasExt) newName = newName + '.' + ext
+
+    if (seenNewNames.has(newName)) {
+      const dotIdx = newName.lastIndexOf('.')
+      const base = dotIdx > 0 ? newName.slice(0, dotIdx) : newName
+      const extPart = dotIdx > 0 ? newName.slice(dotIdx) : ''
+      let n = 1
+      while (seenNewNames.has(base + '_' + String(n).padStart(2, '0') + extPart)) n++
+      newName = base + '_' + String(n).padStart(2, '0') + extPart
+    }
+    seenNewNames.add(newName)
 
     const targetPath = path.join(baseDir, newName)
     let status: PreviewStatus = 'ok'
     const warnings: string[] = []
-
-    if (seenNewNames.has(newName)) {
-      status = 'duplicate'
-      warnings.push('Duplicate target filename in batch')
-    }
-    seenNewNames.add(newName)
 
     if (status === 'ok') {
       try {

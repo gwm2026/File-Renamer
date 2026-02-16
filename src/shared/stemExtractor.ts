@@ -1,5 +1,6 @@
 /**
- * Extract stem-like suffix from filename (segment after last underscore, no extension).
+ * Extract suffix from filename (segment after last underscore, no extension).
+ * Used for any per-file "suffix" token (e.g. stem in audio deliverables).
  * e.g. "Song_V1_STEM_Original Vocals.wav" -> "Original Vocals"
  * Works in both Node and browser (no path module).
  */

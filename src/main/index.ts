@@ -2,35 +2,76 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'path'
 import fs from 'fs/promises'
 import Store from 'electron-store'
+import type { Company, CompanyTemplate } from '../shared/types'
 import {
-  getDefaultTemplates,
+  getDefaultCompanies,
   previewRename as doPreviewRename,
   applyRename as doApplyRename,
   undoLastRename as doUndoLastRename,
 } from './ipc-handlers'
 
 const store = new Store<{
-  companyTemplates: import('../shared/types').CompanyTemplate[]
+  companies: Company[]
+  companyTemplates: CompanyTemplate[]
   renameJournal: import('../shared/types').RenameJournalEntry[]
   lastUsedValuesPerCompany: Record<string, Record<string, string>>
 }>({ name: 'schemerename' })
 
 const JOURNAL_MAX = 50
 
+function isLegacyTemplate(t: unknown): t is CompanyTemplate {
+  return (
+    typeof t === 'object' &&
+    t != null &&
+    'pattern' in t &&
+    'tokens' in t &&
+    Array.isArray((t as CompanyTemplate).tokens)
+  )
+}
+
+function migrateCompanyTemplatesToCompanies(): Company[] {
+  const legacy = store.get('companyTemplates', [])
+  if (!Array.isArray(legacy) || legacy.length === 0) return []
+  const companies: Company[] = legacy
+    .filter(isLegacyTemplate)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      types: [],
+      schemes: [
+        {
+          id: t.id + '-default',
+          name: 'Default',
+          pattern: t.pattern,
+          tokens: t.tokens,
+          rules: t.rules,
+          parsingHints: t.parsingHints,
+        },
+      ],
+    }))
+  store.set('companies', companies)
+  return companies
+}
+
 function ensureDefaults() {
-  let templates = store.get('companyTemplates', [])
-  if (templates.length === 0) {
-    templates = getDefaultTemplates()
-    store.set('companyTemplates', templates)
+  let companies = store.get('companies', [])
+  if (!Array.isArray(companies) || companies.length === 0) {
+    const migrated = migrateCompanyTemplatesToCompanies()
+    if (migrated.length > 0) {
+      companies = migrated
+    } else {
+      companies = getDefaultCompanies()
+      store.set('companies', companies)
+    }
   }
   if (!Array.isArray(store.get('renameJournal'))) {
     store.set('renameJournal', [])
   }
 }
 
-function getTemplates(): import('../shared/types').CompanyTemplate[] {
+function getCompanies(): Company[] {
   ensureDefaults()
-  return store.get('companyTemplates', [])
+  return store.get('companies', [])
 }
 
 function createWindow() {
@@ -67,7 +108,7 @@ app.on('window-all-closed', () => {
 ipcMain.handle('schemerename:selectFiles', async () => {
   const result = await dialog.showOpenDialog({
     properties: ['openFile', 'multiSelections'],
-    filters: [{ name: 'Audio', extensions: ['wav', 'aif', 'aiff', 'mp3'] }],
+    // No filter: allow any file type (audio, PDFs, contracts, etc.)
   })
   if (result.canceled) return []
   return result.filePaths
@@ -81,17 +122,17 @@ ipcMain.handle('schemerename:selectFolder', async () => {
   return result.filePaths[0] ?? null
 })
 
-ipcMain.handle('schemerename:getTemplates', async () => {
-  return getTemplates()
+ipcMain.handle('schemerename:getCompanies', async () => {
+  return getCompanies()
 })
 
-ipcMain.handle('schemerename:saveTemplates', async (_, templates: import('../shared/types').CompanyTemplate[]) => {
-  store.set('companyTemplates', templates)
+ipcMain.handle('schemerename:saveCompanies', async (_, companies: Company[]) => {
+  store.set('companies', companies)
 })
 
 ipcMain.handle('schemerename:previewRename', async (_, args: import('../shared/types').PreviewRenameArgs) => {
-  const templates = getTemplates()
-  return doPreviewRename(args, templates, fs)
+  const companies = getCompanies()
+  return doPreviewRename(args, companies, fs)
 })
 
 ipcMain.handle('schemerename:applyRename', async (_, args: { operations: { fromPath: string; toPath: string }[]; copyInsteadOfRename?: boolean }) => {

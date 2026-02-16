@@ -1,10 +1,10 @@
-import type { CompanyTemplate } from './types'
+import type { CompanyTemplate, Scheme } from './types'
 
 /**
  * Parse a filename using template's parsing regex (capture groups) or heuristic.
  * Returns record of token key -> value.
  */
-export function parseFilename(filename: string, template: CompanyTemplate): Record<string, string> {
+export function parseFilename(filename: string, template: CompanyTemplate | Scheme): Record<string, string> {
   const stem = filename.replace(/\.[^/.]+$/, '')
   const hints = template.parsingHints
   if (hints?.regex && hints.captureToToken?.length) {
@@ -28,7 +28,7 @@ export function parseFilename(filename: string, template: CompanyTemplate): Reco
   return heuristicParse(stem, template)
 }
 
-function heuristicParse(stem: string, template: CompanyTemplate): Record<string, string> {
+function heuristicParse(stem: string, template: CompanyTemplate | Scheme): Record<string, string> {
   const out: Record<string, string> = {}
   if (stem.includes(' - ') && stem.includes('(') && stem.includes(')')) {
     const dashIdx = stem.indexOf(' - ')

@@ -1,15 +1,16 @@
-import type { CompanyTemplate } from '@shared/types'
+import type { Company, Scheme } from '@shared/types'
 
 const COMMON_KEYS = ['Cmaj', 'Amin', 'Dmaj', 'Dmin', 'F#min', 'Bbmaj', 'Gmin', 'Amaj', 'Emaj', 'Bmin']
 
 interface ProjectDetailsFormProps {
-  template: CompanyTemplate
+  template: Scheme
+  company: Company | null
   values: Record<string, string>
   onChange: (values: Record<string, string>) => void
 }
 
-export function ProjectDetailsForm({ template, values, onChange }: ProjectDetailsFormProps) {
-  const isWestOne = template.id === 'preset-west-one-music-group'
+export function ProjectDetailsForm({ template, company, values, onChange }: ProjectDetailsFormProps) {
+  const isWestOne = template.id === 'preset-west-one-music-group-default'
 
   const update = (key: string, value: string) => {
     if (template.tokens.find((t) => t.key === 'version')?.renderPrefix && key === 'version') {
@@ -17,6 +18,12 @@ export function ProjectDetailsForm({ template, values, onChange }: ProjectDetail
       if (value && !value.startsWith('v')) value = 'v' + value
     }
     onChange({ ...values, [key]: value })
+  }
+
+  /** For type token: use company.types if set, else token.allowedValues */
+  const getOptionsForToken = (token: { key: string; allowedValues?: string[] }): string[] => {
+    if (token.key === 'type' && company?.types?.length) return company.types
+    return token.allowedValues ?? []
   }
 
   return (
@@ -29,7 +36,7 @@ export function ProjectDetailsForm({ template, values, onChange }: ProjectDetail
             const val = values[token.key] ?? token.defaultValue ?? ''
             const isKey = token.key === 'key' && isWestOne
             const isBpm = token.key === 'bpm' && isWestOne
-            const isVersion = token.key === 'version'
+            const options = getOptionsForToken(token)
 
             return (
               <div key={token.id} className="flex flex-col gap-1">
@@ -38,9 +45,9 @@ export function ProjectDetailsForm({ template, values, onChange }: ProjectDetail
                   {token.required && <span className="text-red-500"> *</span>}
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
-                  {token.allowedValues?.length ? (
+                  {options.length ? (
                     <>
-                      {token.allowedValues.slice(0, 8).map((opt) => (
+                      {options.slice(0, 12).map((opt) => (
                         <button
                           key={opt}
                           type="button"
@@ -80,7 +87,7 @@ export function ProjectDetailsForm({ template, values, onChange }: ProjectDetail
                       placeholder={token.example}
                       className="w-20 rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-700"
                     />
-                  ) : !token.allowedValues?.length || (isKey && val && !COMMON_KEYS.includes(val)) ? (
+                  ) : !options.length || (isKey && val && !COMMON_KEYS.includes(val)) ? (
                     <input
                       type="text"
                       value={val}

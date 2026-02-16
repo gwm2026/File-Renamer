@@ -1,18 +1,20 @@
 {
   "name": "schemerename",
   "version": "1.0.0",
-  "description": "Batch-rename audio files based on per-company naming schemes",
+  "description": "Batch-rename files (audio, PDFs, contracts, etc.) based on per-company naming schemes",
   "main": "dist-main/main/index.js",
   "author": "",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.preload.json && vite build",
+    "build:main": "tsc -p tsconfig.main.json && tsc -p tsconfig.preload.json",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "electron:dev": "npm run build && concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder --mac"
+    "electron:dev": "npm run build:main && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder --mac",
+    "package": "npm run build && electron-builder --mac"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
