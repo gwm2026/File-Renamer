@@ -1,0 +1,23 @@
+{
+  "Acme Design": {
+    "fields": [
+      "client",
+      "project_code",
+      "deliverable",
+      "date"
+    ],
+    "pattern": "{client}_{project_code}_{deliverable}_{date}_{seq}",
+    "sequence_padding": 3,
+    "sequence_start": 1
+  },
+  "BluePeak Engineering": {
+    "fields": [
+      "project_code",
+      "phase",
+      "drawing_type"
+    ],
+    "pattern": "{project_code}-{phase}-{drawing_type}-{seq}-{ext}",
+    "sequence_padding": 4,
+    "sequence_start": 100
+  }
+}
