@@ -8,8 +8,19 @@ import re
 import uuid
 from datetime import date
 from pathlib import Path
-from tkinter import BOTH, END, LEFT, VERTICAL, W, filedialog, messagebox, Tk, StringVar
-from tkinter import ttk
+from typing import Any
+
+try:
+    from tkinter import BOTH, END, LEFT, VERTICAL, W, filedialog, messagebox, Tk, StringVar
+    from tkinter import ttk
+
+    TK_AVAILABLE = True
+except ModuleNotFoundError:
+    BOTH = END = LEFT = VERTICAL = W = None  # type: ignore[assignment]
+    filedialog = messagebox = ttk = None  # type: ignore[assignment]
+    Tk = Any  # type: ignore[assignment,misc]
+    StringVar = Any  # type: ignore[assignment,misc]
+    TK_AVAILABLE = False
 
 CONFIG_PATH = Path(__file__).parent / "company_schemes.json"
 INVALID_FILENAME_CHARS = re.compile(r'[\\/:*?"<>|]+')
@@ -110,10 +121,13 @@ def load_schemes() -> dict[str, dict[str, object]]:
         with CONFIG_PATH.open("r", encoding="utf-8") as config_file:
             data = json.load(config_file)
     except (json.JSONDecodeError, OSError):
-        messagebox.showwarning(
-            "Config warning",
-            "Could not read company_schemes.json. Using defaults instead.",
-        )
+        if messagebox is not None:
+            messagebox.showwarning(
+                "Config warning",
+                "Could not read company_schemes.json. Using defaults instead.",
+            )
+        else:
+            print("Config warning: Could not read company_schemes.json. Using defaults instead.")
         data = DEFAULT_SCHEMES.copy()
         save_schemes(data)
 
@@ -131,6 +145,9 @@ class FileRenamingTool:
     """Main application controller."""
 
     def __init__(self, root: Tk) -> None:
+        if not TK_AVAILABLE:
+            raise RuntimeError("Tkinter is required to run this GUI app.")
+
         self.root = root
         self.root.title("Company File Naming Tool")
         self.root.geometry("1120x720")
@@ -596,6 +613,12 @@ class FileRenamingTool:
 
 
 def main() -> None:
+    if not TK_AVAILABLE:
+        raise SystemExit(
+            "Tkinter is not installed. Install python3-tk to run this GUI tool "
+            "(for example: sudo apt-get install python3-tk)."
+        )
+
     root = Tk()
     style = ttk.Style(root)
     if "clam" in style.theme_names():
