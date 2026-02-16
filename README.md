@@ -17,7 +17,13 @@ A desktop file renaming app for storing and reusing company-specific naming stan
 python3 app.py
 ```
 
-No external dependencies are required (uses the Python standard library + Tkinter).
+No third-party Python packages are required (uses the Python standard library + Tkinter).
+
+If you are on Linux and Tkinter is missing, install it with:
+
+```bash
+sudo apt-get install python3-tk
+```
 
 ## Naming pattern tokens
 
