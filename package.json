@@ -14,7 +14,10 @@
     "test:watch": "vitest",
     "electron:dev": "npm run build:main && concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder --mac",
-    "package": "npm run build && electron-builder --mac"
+    "package": "npm run build && electron-builder --mac",
+    "package:mac-dmg": "npm run build && electron-builder --mac dmg --x64 --arm64",
+    "package:mac-zip": "npm run build && electron-builder --mac zip --x64 --arm64",
+    "package:mac-dir": "npm run build && electron-builder --mac dir"
   },
   "dependencies": {
     "electron-store": "^8.1.0",
@@ -56,7 +59,7 @@
     "productName": "SchemeRename",
     "mac": {
       "category": "public.app-category.utilities",
-      "target": ["dmg", "zip"]
+      "target": ["dir", "zip"]
     },
     "files": [
       "dist-main/**",

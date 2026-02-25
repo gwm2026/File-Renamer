@@ -77,15 +77,23 @@ Build a standalone app you can keep in Applications or anywhere:
 npm run package
 ```
 
-(or `npm run electron:build` — same thing)
+When it finishes you'll have:
 
-When it finishes you’ll have:
-
-- **`release/SchemeRename.app`** — double‑click to run like any Mac app.
-- **`release/SchemeRename-1.0.0.dmg`** — installer you can share or use to install.
-- **`release/SchemeRename-1.0.0-mac.zip`** — zip of the app.
+- **`release/mac/SchemeRename.app`** — double-click to run like any Mac app.
+- **`release/SchemeRename-1.0.0-mac.zip`** — zip of the app you can share.
 
 Copy **SchemeRename.app** to `/Applications` (or leave it in `release/`) and run it from there. Your data (companies, templates) is stored in your user app data folder and will be used by the packaged app too.
+
+### Additional packaging scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run package` | Default: builds `.app` directory + `.zip` (x64, works from any OS) |
+| `npm run package:mac-zip` | Builds `.zip` for both Intel and Apple Silicon |
+| `npm run package:mac-dir` | Builds unpacked `.app` only (fastest, good for testing) |
+| `npm run package:mac-dmg` | Builds `.dmg` installer for both Intel and Apple Silicon (**macOS only**) |
+
+> **Note:** DMG creation requires macOS (it uses the native `hdiutil` tool). All other targets work from macOS, Linux, or Windows. The app is not code-signed; on first launch macOS may show a Gatekeeper warning — right-click the app and choose Open to bypass it.
 
 ## Tests
 
